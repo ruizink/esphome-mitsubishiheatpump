@@ -1,6 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import climate
+# from . import esphome_climate as climate
 from esphome.components.logger import HARDWARE_UART_TO_SERIAL
 from esphome.const import (
     CONF_ID,
@@ -15,10 +16,22 @@ from esphome.core import CORE, coroutine
 
 AUTO_LOAD = ["climate"]
 
+CLIMATE_SWING_MODES = {
+    "OFF": 0,
+    "1_UP": 1,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5_DOWN": 5,
+    "ON": 6,
+}
+
 CONF_SUPPORTS = "supports"
 DEFAULT_CLIMATE_MODES = ["HEAT_COOL", "COOL", "HEAT", "DRY", "FAN_ONLY"]
 DEFAULT_FAN_MODES = ["AUTO", "DIFFUSE", "LOW", "MEDIUM", "MIDDLE", "HIGH"]
-DEFAULT_SWING_MODES = ["OFF", "VERTICAL"]
+DEFAULT_SWING_MODES = ["OFF", "1_UP", "2", "3", "4", "5_DOWN", "ON"]
+#DEFAULT_SWING_MODES = ["OFF", "VERTICAL"]
+
 
 MitsubishiHeatPump = cg.global_ns.class_(
     "MitsubishiHeatPump", climate.Climate, cg.PollingComponent
@@ -54,7 +67,8 @@ CONFIG_SCHEMA = climate.CLIMATE_SCHEMA.extend(
                 cv.Optional(CONF_FAN_MODE, default=DEFAULT_FAN_MODES):
                     cv.ensure_list(climate.validate_climate_fan_mode),
                 cv.Optional(CONF_SWING_MODE, default=DEFAULT_SWING_MODES):
-                    cv.ensure_list(climate.validate_climate_swing_mode),
+                    cv.ensure_list(cv.enum(CLIMATE_SWING_MODES)),
+                    # cv.ensure_list(climate.validate_climate_swing_mode),
             }
         ),
     }
@@ -82,7 +96,7 @@ def to_code(config):
 
     for mode in supports[CONF_SWING_MODE]:
         cg.add(traits.add_supported_swing_mode(
-            climate.CLIMATE_SWING_MODES[mode]
+            CLIMATE_SWING_MODES[mode]
         ))
 
     yield cg.register_component(var, config)
@@ -90,5 +104,5 @@ def to_code(config):
     cg.add_library(
         name="HeatPump",
         repository="https://github.com/SwiCago/HeatPump",
-        version="d6a29134401d7caae1b8fca9c452c8eb92af60c5",
+        version="cea90c5ed48d24a904835f8918bd88cbc84cb1be",
     )
